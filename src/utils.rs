@@ -4,6 +4,17 @@ use std::io::ErrorKind;
 use std::path::Path;
 use crate::Config;
 
+
+pub fn read_config() -> Option<Config> {
+    if let Ok(content) = fs::read_to_string("elf.toml") {
+        let config = toml::from_str(&content).expect("Error parsing elf.toml");
+        Some(config)
+    } else {
+        eprintln!("Couldn't find elf.toml. Are you in the correct project root?");
+        None
+    }
+}
+
 pub fn write_new_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
         fs::write(path, content)?;
@@ -36,3 +47,5 @@ pub fn update_elf(year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn
     println!("modified: elf.toml");
     Ok(())
 }
+
+

@@ -3,14 +3,15 @@ mod scaffold;
 mod utils;
 
 use std::collections::HashMap;
-use std::{env, fs};
+use std::env;
 use clap::{Parser, Subcommand, ValueEnum};
 use jiff::Zoned;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use crate::scaffold::go_project::GoProject;
 use crate::scaffold::rust_project::RustProject;
 use crate::scaffold::traits::Scaffold;
-use crate::utils::update_elf;
+use crate::utils::{read_config, update_elf};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Config {
@@ -45,7 +46,7 @@ enum Commands {
     Submit {
         #[arg(short, long, required = false, value_name = "YEAR", help = "Specify the year")]
         year: Option<String>,
-        #[arg(short, long, required = false, value_name = "DAY", help = "Specify the day")]
+        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
         day: Option<String>,
         #[arg(short, long, value_name = "PART", default_value_t = 1, help = "Specify the solution part")]
         part: u8,
@@ -53,7 +54,7 @@ enum Commands {
     Add {
         #[arg(short, long, required = false, value_name = "YEAR", help = "Specify the year")]
         year: Option<String>,
-        #[arg(short, long, required = false, value_name = "DAY", help = "Specify the day")]
+        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
         day: Option<String>,
         #[arg(short, long, required = false, value_name = "FILE", help = "Specify the template file to use")]
         template: Option<String>,
@@ -61,7 +62,7 @@ enum Commands {
     Set {
         #[arg(short, long, required = false, value_name = "YEAR", help = "Specify the year")]
         year: Option<String>,
-        #[arg(short, long, required = false, value_name = "DAY", help = "Specify the day")]
+        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
         day: Option<String>,
     },
     Next
@@ -103,18 +104,11 @@ fn main() {
             }
         }
         Some(Commands::Submit { year, day, part }) => {
-            if let Some(mut cfg) = read_config() {
-                find_solution(part, &cfg.year, &cfg.day, &mut cfg.solutions);
+            if let Some(cfg) = read_config() {
                 match (year, day) {
                     (Some(_), None) | (None, Some(_)) => eprintln!("Specify either both year and day, or none"),
-                    (Some(y), Some(d)) => {
-                        let solution = find_solution(part, y, d, &mut cfg.solutions).expect(&format!("No computed solution found for {y}-{d}"));
-                        submit::submit(y, d, *part, &solution)
-                    },
-                    (None, None) => {
-                        let solution = find_solution(part, &cfg.year, &cfg.day, &mut cfg.solutions).expect(&format!("No computed solution found for {}-{}", cfg.year, cfg.day));
-                        submit::submit(&cfg.year, &cfg.day, *part, &solution)
-                    },
+                    (Some(y), Some(d)) => submit::submit(y, d, *part, &cfg),
+                    (None, None) => submit::submit(&cfg.year, &cfg.day, *part, &cfg)
                 }
             }
         }
@@ -157,28 +151,6 @@ fn get_builder(cfg: &Config) -> Box<dyn Scaffold> {
     }
 }
 
-fn find_solution(part: &u8, year: &String, day: &String, solutions: &mut HashMap<String, Vec<String>>) -> Option<String> {
-    if let Some(solved) = solutions.get(&format!("{year}-{day}")) {
-        if let Some(submission) = solved.get((*part - 1) as usize) {
-            Some(submission.clone())
-        } else {
-            None
-        }
-    } else {
-        None
-    }
-}
-
-fn read_config() -> Option<Config> {
-    if let Ok(content) = fs::read_to_string("elf.toml") {
-        let config = toml::from_str(&content).expect("Error parsing elf.toml");
-        Some(config)
-    } else {
-        eprintln!("Couldn't find elf.toml. Are you in the correct project root?");
-        None
-    }
-}
-
 fn fmt_day( day: i8) -> String {
     return if day < 10 {
         format!("0{day}")
@@ -189,4 +161,13 @@ fn fmt_day( day: i8) -> String {
 
 fn current_year() -> String {
     Zoned::now().year().to_string()
+}
+
+fn validate_day(day: &str) -> Result<String, String> {
+    let re = Regex::new(r"^(0[1-9]|1[0-9]|2[0-5])$").unwrap();
+    if re.is_match(day) {
+        Ok(String::from(day))
+    } else {
+        Err(String::from("The day must be a zero-padded string in the range 01-25"))
+    }
 }

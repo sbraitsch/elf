@@ -1,10 +1,10 @@
 # 🧝 Elf - Advent of Code CLI
 
 ## What can this do?
+- Scaffold a new Rust project with predefined structure and utility functions
 - Create boilerplate for new AoC Solutions
 - Load your puzzle input (requires a session cookie)
-- Bootstrap a fully new Rust project with predefined structure and utility functions
-- Add boilerplate for a new year of solutions inside a previously bootstrapped project
+- Create modules for a new year of solutions inside a previously bootstrapped project
 - Submit solutions (**NYI**)
 
 ## How do I use it?
@@ -13,12 +13,12 @@
 > Elf tracks your current progress in the `elf.toml` file.<br>
 > When you omit `--year` or `--day`, it will fall back to the values stored there.<br><br>
 > Some examples:
-> - `elf new -l=rust "my_aoc"` will create a new, opinionated, cargo project named "my_aoc" in the current directory, with a module for the current year
+> - `elf new -l=rust "my_aoc"` will create a new cargo project named "my_aoc" in the current directory, with a module for the current year
 > - `elf next` will create the stubs for the day after `elf.toml::day` in the year `elf.toml::year`
 > - `elf add -d=06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 > - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
 
-Elf always assumes to be run from the root of a bootstrapped project, except when using the `bootstrap` command.<br>
+Elf needs to be run from the root of a bootstrapped project, except when using the `bootstrap` command.<br>
 Available commands are:
 
 ### `elf new`:
@@ -48,7 +48,7 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 | arg          | alt  | effect                                                       |
 |--------------|------|--------------------------------------------------------------|
 | `--year`     | `-y` | The year to add a module for.                                |
-| `--day`      | `-d` | The day to create a solution stub for. Left pad with 0.      |
+| `--day`      | `-d` | The day to create a solution stub for.                       |
 | `--template` | `-t` | Path to an optional template file to base the stub on. (NYI) |
 
 
@@ -57,18 +57,18 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 
 > Stubs created by Elf write computed solutions into `elf.toml`, from which they are read when submitting. <br>
 
-| arg      | alt  | effect                                                             |
-|----------|------|--------------------------------------------------------------------|
-| `--year` | `-y` | The year of the solution to submit.                                |
-| `--day`  | `-d` | The day of the solution to submit. Left pad with 0.                |
-| `--part` | `-p` | The part of the solution to submit. <br> Defaults to 1 if missing. |
+| arg      | alt  | effect                                                            |
+|----------|------|-------------------------------------------------------------------|
+| `--year` | `-y` | The year of the solution to submit. Defaults to `elf.toml::year`. |
+| `--day`  | `-d` | The day of the solution to submit. Defaults to `elf.toml::day`.   |
+| `--part` | `-p` | The part of the solution to submit. <br> Defaults to 1.           |
 
 ### `elf set`:
 <br>
 
-Convenience command to manipulate year/day in `elf.toml`, e.g. to switch the current year context. 
+> Convenience command to manipulate year/day in `elf.toml`, e.g. to switch the current year context. 
 
-| arg      | alt  | effect                          |
-|----------|------|---------------------------------|
-| `--year` | `-y` | Sets `elf.toml::year` to <YEAR> |
-| `--day`  | `-d` | Sets `elf.toml::day` to <DAY>   |
+| arg      | alt  | effect                |
+|----------|------|-----------------------|
+| `--year` | `-y` | Sets `elf.toml::year` |
+| `--day`  | `-d` | Sets `elf.toml::day`  |
