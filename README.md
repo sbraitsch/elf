@@ -18,7 +18,7 @@
 > - `elf add -d=06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 > - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
 
-Elf needs to be run from the root of a bootstrapped project, except when using the `bootstrap` command.<br>
+Elf assumes it will to be run from the root of an elf-project, except when using the `new` command.<br>
 Available commands are:
 
 ### `elf new`:
