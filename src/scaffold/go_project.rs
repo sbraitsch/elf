@@ -1,10 +1,10 @@
 #![allow(unused)]
 use std::error::Error;
 use crate::Config;
-use super::traits::Bootstrap;
+use super::traits::Scaffold;
 
 pub struct GoProject {}
-impl Bootstrap for GoProject {
+impl Scaffold for GoProject {
     fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         println!("Golang support is not yet implemented");
         Ok(())
@@ -16,6 +16,7 @@ impl Bootstrap for GoProject {
     }
 
     fn day(&self, year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
-        todo!()
+        println!("Golang support is not yet implemented");
+        Ok(())
     }
 }

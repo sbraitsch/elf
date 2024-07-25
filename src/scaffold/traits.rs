@@ -1,7 +1,7 @@
 use std::error::Error;
 use crate::Config;
 
-pub trait Bootstrap {
+pub trait Scaffold {
     fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>>;
 
     fn module(&self, year: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>>;

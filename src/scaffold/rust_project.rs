@@ -6,31 +6,36 @@ use std::process::Command;
 use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
 use crate::Config;
 use crate::utils::{update_elf, write_new_file, write_to_file};
-use super::traits::Bootstrap;
+use super::traits::Scaffold;
 
 const UTILS: &str = include_str!("../templates/utils.rs");
 const TEMPLATE: &str = include_str!("../templates/template.rs");
 pub struct RustProject {}
 
-impl Bootstrap for RustProject {
+impl Scaffold for RustProject {
     fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         if Path::new(name).exists() {
             let err = std::io::Error::new(ErrorKind::AlreadyExists, "Project directory already exists");
             return Err(Box::new(err));
         }
-        let _cmd = Command::new("cargo")
+        let cmd = Command::new("cargo")
             .arg("new")
             .arg(name)
             .output()?;
-        println!("🎁 Bootstrapping new Project \'{name}\'🎁");
-        env::set_current_dir(name)?;
-        write_new_file(Path::new("session.txt"), "session=<YOURSESSION>")?;
-        let git_ignore = "**/inputs/\nsession.txt";
-        write_to_file(Path::new(".gitignore"), git_ignore)?;
-        write_new_file(Path::new("src/utils.rs"), UTILS)?;
-        self.module(year, cfg)?;
-        println!("You're all set 🎅🏻");
-        Ok(())
+        if cmd.status.success() {
+            println!("A diligent elf is scaffolding your new project: \'{name}\'🎁");
+            env::set_current_dir(name)?;
+            write_new_file(Path::new("session.txt"), "session=<YOURSESSION>")?;
+            let git_ignore = "**/inputs/\nsession.txt";
+            write_to_file(Path::new(".gitignore"), git_ignore)?;
+            write_new_file(Path::new("src/utils.rs"), UTILS)?;
+            self.module(year, cfg)?;
+            println!("You're all set. Have fun! 🎅🏻");
+            Ok(())
+        } else {
+            let err = std::io::Error::new(ErrorKind::Other, String::from_utf8_lossy(&cmd.stderr));
+            return Err(Box::new(err));
+        }
     }
 
     fn module(&self, year: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
@@ -45,7 +50,7 @@ impl Bootstrap for RustProject {
     fn day(&self, year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         let base_path = format!("src/aoc_{year}");
         if !Path::new(&base_path).exists() {
-            let err = std::io::Error::new(ErrorKind::NotFound, format!("No module found for AoC {year}. Create one first with elf new -y=xxxx"));
+            let err = std::io::Error::new(ErrorKind::NotFound, format!("No module found for AoC {year}. Create one first with elf add -y=xxxx"));
             return Err(Box::new(err));
         }
         update_elf(year, day, cfg)?;
