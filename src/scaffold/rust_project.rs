@@ -97,7 +97,9 @@ fn write_solution_template(
 ) -> Result<(), Box<dyn Error>> {
     let content;
     if let Some(template_path) = template {
-        content = fs::read_to_string(template_path)?;
+        content = fs::read_to_string(template_path)?
+            .replace("{{year}}", year)
+            .replace("{{day}}", day);
     } else {
         content = TEMPLATE.replace("{{year}}", year).replace("{{day}}", day);
     }
