@@ -70,20 +70,14 @@ impl Scaffold for RustProject {
             std::process::exit(1);
         }
         if cfg.session.len() == 0 {
-            let err = std::io::Error::new(
-                ErrorKind::NotFound,
-                "Missing session token. Input can't be retrieved. Please insert your token into elf.toml",
-            );
-            return Err(Box::new(err));
-        }
-
-        if let Some(ref _tmp) = cfg.template {
-            println!("Template configured via elf.toml");
-        }
-
-        if let Err(e) = write_input(&base_path, year, day, &cfg.session) {
-            eprintln!("Error writing input file: {}", e);
-            std::process::exit(1);
+            eprintln!(
+                "Input file could not be retrieved due to an unset session variable in elf.toml"
+            )
+        } else {
+            if let Err(e) = write_input(&base_path, year, day, &cfg.session) {
+                eprintln!("Error writing input file: {}", e);
+                std::process::exit(1);
+            }
         }
         Ok(())
     }
@@ -97,6 +91,7 @@ fn write_solution_template(
 ) -> Result<(), Box<dyn Error>> {
     let content;
     if let Some(template_path) = template {
+        eprintln!("Using @{template_path} as a template");
         content = fs::read_to_string(template_path)?
             .replace("{{year}}", year)
             .replace("{{day}}", day);

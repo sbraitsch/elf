@@ -113,7 +113,7 @@ fn main() {
                 day: String::from("01"),
                 lang: lang.clone(),
                 session: String::new(),
-                template: Some(String::new()),
+                template: None,
                 solutions: Default::default(),
             };
 
@@ -155,9 +155,9 @@ fn main() {
             if let Some(mut cfg) = read_config() {
                 let project: Box<dyn Scaffold> = cfg.lang.to_project();
                 let day_num = &cfg.day.parse::<i8>().unwrap() + 1;
-                project
-                    .day(&cfg.year.clone(), &fmt_day(day_num), &mut cfg)
-                    .expect("Error creating stubs for the next puzzle");
+                if let Err(e) = project.day(&cfg.year.clone(), &fmt_day(day_num), &mut cfg) {
+                    eprintln!("Error during stub generation: {e:?}");
+                }
             }
         }
         Some(Commands::Set {
