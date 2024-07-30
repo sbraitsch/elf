@@ -23,7 +23,7 @@ impl Scaffold for RustProject {
         if cmd.status.success() {
             println!("A diligent elf is scaffolding your new project: \'{name}\'🎁");
             env::set_current_dir(name)?;
-            let git_ignore = "**/inputs/\nsession.txt";
+            let git_ignore = "**/inputs/\nnelf.toml\n.DS_Store";
             write_to_file(Path::new(".gitignore"), git_ignore)?;
             write_new_file(Path::new("src/utils.rs"), UTILS)?;
             self.module(year, cfg)?;
