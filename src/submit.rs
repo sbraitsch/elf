@@ -6,7 +6,14 @@ pub fn submit(year: &str, day: &str, part: u8, cfg: &Config) {
 }
 
 fn find_solution(cfg: &Config, part: u8) -> Option<String> {
-    let Config{year, day, lang: _, solutions} = cfg;
+    let Config {
+        year,
+        day,
+        lang: _,
+        solutions,
+        session: _,
+        template: _,
+    } = cfg;
     if let Some(solved) = solutions.get(&format!("{year}-{day}")) {
         if let Some(submission) = solved.get((part - 1) as usize) {
             Some(submission.clone())

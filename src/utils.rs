@@ -1,9 +1,8 @@
+use crate::Config;
 use std::error::Error;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::Path;
-use crate::Config;
-
 
 pub fn read_config() -> Option<Config> {
     if let Ok(content) = fs::read_to_string("elf.toml") {
@@ -26,7 +25,6 @@ pub fn write_new_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> 
     Ok(())
 }
 
-
 pub fn write_to_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
     let mut file_content = if path.exists() {
         fs::read_to_string(&path)?
@@ -39,13 +37,19 @@ pub fn write_to_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn update_elf(year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
-    cfg.day = String::from(day);
-    cfg.year = String::from(year);
+pub fn update_elf(
+    year: Option<String>,
+    day: Option<String>,
+    session: Option<String>,
+    template: Option<String>,
+    cfg: &mut Config,
+) -> Result<(), Box<dyn Error>> {
+    year.map(|y| cfg.year = y);
+    day.map(|d| cfg.day = d);
+    session.map(|s| cfg.session = s);
+    template.map(|t| cfg.template = Some(t));
     let elf = toml::ser::to_string(&cfg)?;
     fs::write("elf.toml", elf)?;
     println!("modified: elf.toml");
     Ok(())
 }
-
-

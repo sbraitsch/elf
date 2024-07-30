@@ -1,12 +1,12 @@
-use std::{env, fs};
+use super::traits::Scaffold;
+use crate::utils::{update_elf, write_new_file, write_to_file};
+use crate::Config;
+use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
 use std::error::Error;
 use std::io::ErrorKind;
 use std::path::Path;
 use std::process::Command;
-use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
-use crate::Config;
-use crate::utils::{update_elf, write_new_file, write_to_file};
-use super::traits::Scaffold;
+use std::{env, fs};
 
 const UTILS: &str = include_str!("../templates/utils.rs");
 const TEMPLATE: &str = include_str!("../templates/template.rs");
@@ -15,17 +15,14 @@ pub struct RustProject {}
 impl Scaffold for RustProject {
     fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         if Path::new(name).exists() {
-            let err = std::io::Error::new(ErrorKind::AlreadyExists, "Project directory already exists");
+            let err =
+                std::io::Error::new(ErrorKind::AlreadyExists, "Project directory already exists");
             return Err(Box::new(err));
         }
-        let cmd = Command::new("cargo")
-            .arg("new")
-            .arg(name)
-            .output()?;
+        let cmd = Command::new("cargo").arg("new").arg(name).output()?;
         if cmd.status.success() {
             println!("A diligent elf is scaffolding your new project: \'{name}\'🎁");
             env::set_current_dir(name)?;
-            write_new_file(Path::new("session.txt"), "session=<YOURSESSION>")?;
             let git_ignore = "**/inputs/\nsession.txt";
             write_to_file(Path::new(".gitignore"), git_ignore)?;
             write_new_file(Path::new("src/utils.rs"), UTILS)?;
@@ -50,10 +47,19 @@ impl Scaffold for RustProject {
     fn day(&self, year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         let base_path = format!("src/aoc_{year}");
         if !Path::new(&base_path).exists() {
-            let err = std::io::Error::new(ErrorKind::NotFound, format!("No module found for AoC {year}. Create one first with elf add -y=xxxx"));
+            let err = std::io::Error::new(
+                ErrorKind::NotFound,
+                format!("No module found for AoC {year}. Create one first with elf add -y=xxxx"),
+            );
             return Err(Box::new(err));
         }
-        update_elf(year, day, cfg)?;
+        update_elf(
+            Some(year.to_string()),
+            Some(day.to_string()),
+            None,
+            None,
+            cfg,
+        )?;
 
         if let Err(e) = write_solution_template(&base_path, year, day) {
             eprintln!("Error writing solution template: {}", e);
@@ -63,21 +69,25 @@ impl Scaffold for RustProject {
             eprintln!("Error updating mod.rs: {}", e);
             std::process::exit(1);
         }
-        let session;
-        if let Ok(s) = fs::read_to_string("session.txt") {
-            session = s;
-        } else {
-            let err = std::io::Error::new(ErrorKind::AlreadyExists, "No session.txt found. Input will not be retrievable.");
+        if cfg.session.len() == 0 {
+            let err = std::io::Error::new(
+                ErrorKind::AlreadyExists,
+                "Missing session token. Input can't be retrieved. Please insert your token into elf.toml",
+            );
             return Err(Box::new(err));
         }
-        if let Err(e) = write_input(&base_path, year, day, &session) {
+
+        if let Some(ref _tmp) = cfg.template {
+            println!("Template configured via elf.toml");
+        }
+
+        if let Err(e) = write_input(&base_path, year, day, &cfg.session) {
             eprintln!("Error writing input file: {}", e);
             std::process::exit(1);
         }
         Ok(())
     }
 }
-
 
 fn write_solution_template(base_path: &str, year: &str, day: &str) -> Result<(), Box<dyn Error>> {
     let content = TEMPLATE.replace("{{year}}", year).replace("{{day}}", day);
@@ -126,4 +136,3 @@ fn write_input(
     write_new_file(&file_path, &response.text()?)?;
     Ok(())
 }
-
