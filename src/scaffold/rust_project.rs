@@ -61,7 +61,7 @@ impl Scaffold for RustProject {
             cfg,
         )?;
 
-        if let Err(e) = write_solution_template(&base_path, year, day) {
+        if let Err(e) = write_solution_template(&base_path, year, day, &cfg.template) {
             eprintln!("Error writing solution template: {}", e);
             std::process::exit(1);
         }
@@ -89,8 +89,18 @@ impl Scaffold for RustProject {
     }
 }
 
-fn write_solution_template(base_path: &str, year: &str, day: &str) -> Result<(), Box<dyn Error>> {
-    let content = TEMPLATE.replace("{{year}}", year).replace("{{day}}", day);
+fn write_solution_template(
+    base_path: &str,
+    year: &str,
+    day: &str,
+    template: &Option<String>,
+) -> Result<(), Box<dyn Error>> {
+    let content;
+    if let Some(template_path) = template {
+        content = fs::read_to_string(template_path)?;
+    } else {
+        content = TEMPLATE.replace("{{year}}", year).replace("{{day}}", day);
+    }
     let filename = format!("day_{day}.rs");
     let file_path = Path::new(&base_path).join("solutions").join(&filename);
     write_new_file(&file_path, &content)?;
@@ -104,7 +114,7 @@ fn write_solution_mod(base_path: &str, day: &str) -> Result<(), Box<dyn Error>> 
     } else {
         String::new()
     };
-    let add_to_mod = format!("pub mod.rs day_{};\n", day);
+    let add_to_mod = format!("pub mod day_{};\n", day);
     if !content.contains(&add_to_mod) {
         content.push_str(&add_to_mod);
         fs::write(&mod_path, content)?;

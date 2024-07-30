@@ -9,7 +9,6 @@ use crate::utils::{read_config, update_elf};
 use clap::{Parser, Subcommand};
 use jiff::Zoned;
 use regex::Regex;
-use std::env;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -100,11 +99,11 @@ fn main() {
     let cli = Cli::parse();
 
     // ---------DEV----------
-    if let Some(Commands::New { .. }) = &cli.command {
-        env::set_current_dir("../").expect("Error moving to project dir");
-    } else {
-        env::set_current_dir("../aoc").expect("Error moving to project dir");
-    }
+    // if let Some(Commands::New { .. }) = &cli.command {
+    //     env::set_current_dir("../").expect("Error moving to project dir");
+    // } else {
+    //     env::set_current_dir("../aoc").expect("Error moving to project dir");
+    // }
     // ----------------------
 
     match &cli.command {
