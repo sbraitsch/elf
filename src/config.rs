@@ -1,7 +1,7 @@
 use crate::{scaffold::go_project::GoProject, scaffold::rust_project::RustProject, Scaffold};
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -27,5 +27,15 @@ impl Language {
             Self::Rust => Box::new(RustProject {}),
             Self::Go => Box::new(GoProject {}),
         }
+    }
+}
+
+impl Display for Language {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Language::Rust => "rust",
+            Language::Go => "go",
+        };
+        write!(f, "{s}")
     }
 }

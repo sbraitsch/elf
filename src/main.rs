@@ -26,8 +26,8 @@ enum Commands {
         #[arg(
             short,
             long,
-            required = true,
             value_name = "LANGUAGE",
+            default_value_t = Language::Rust,
             help = "Specify language to use. Supports [rust, go]"
         )]
         lang: Language,
@@ -64,14 +64,6 @@ enum Commands {
         year: Option<String>,
         #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
         day: Option<String>,
-        #[arg(
-            short,
-            long,
-            required = false,
-            value_name = "FILE",
-            help = "Specify the template file to use"
-        )]
-        template: Option<String>,
     },
     Set {
         #[arg(
@@ -144,11 +136,7 @@ fn main() {
                 }
             }
         }
-        Some(Commands::Add {
-            year,
-            day,
-            template: _template,
-        }) => {
+        Some(Commands::Add { year, day }) => {
             if let Some(mut cfg) = read_config() {
                 let project: Box<dyn Scaffold> = cfg.lang.to_project();
                 match (year, day) {

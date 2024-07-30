@@ -11,9 +11,8 @@
 <br>
 
 > Elf tracks your current progress in the `elf.toml` file.<br>
-> When you omit `--year` or `--day`, it will fall back to the values stored there.<br><br>
-> Some examples:
-> - `elf new -l=rust "my_aoc"` will create a new cargo project named "my_aoc" in the current directory, with a module for the current year
+> Usage examples:
+> - `elf new "my_aoc"` will create a new cargo project named "my_aoc" in the current directory, with a module for the current year
 > - `elf next` will create the stubs for the day after `elf.toml::day` in the year `elf.toml::year`
 > - `elf add -d=06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 > - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
@@ -24,11 +23,11 @@ Available commands are:
 ### `elf new`:
 <br>
 
-| arg      | alt  | required  | effect                                                                     |
-|----------|------|-----------|----------------------------------------------------------------------------|
-| `<NAME>` | --   | **yes**   | Positional argument. The name of the project to be created.                |
-| `--lang` | `-l` | **yes**   | The language you intend to use. Accepted values: "rust", "go" (NYI)        |
-| `--year` | `-y` | no        | The year to create a module for. <br> Defaults to current year if missing. |
+| arg      | alt  | required | effect                                                                          |
+|----------|------|----------|---------------------------------------------------------------------------------|
+| `<NAME>` | --   | **yes**  | Positional argument. The name of the project to be created.                     |
+| `--lang` | `-l` | no       | The language you intend to use. Accepted values: "rust", "go". Default is Rust. |
+| `--year` | `-y` | no       | The year to create a module for. <br> Defaults to current year if missing.      |
 
 
 ### `elf next`:
@@ -42,18 +41,18 @@ Creates the solution stubs for the *next* puzzle, based on the values in `elf.to
 Expands the existing scaffolding by either a new submodule or a solution stub.
 
 > For a cleaner API, `--year` and `--day` are mutually exclusive.<br>
-> If you want to add a specific day to a specific year, you can edit `year` in the `elf.toml`.
+> If you want to add a specific day to a specific year, you can change `year` in the `elf.toml`.
+> Note that the module for that year needs to exist. It will not be auto-created.
 
 
 | arg          | alt  | effect                                                       |
 |--------------|------|--------------------------------------------------------------|
 | `--year`     | `-y` | The year to add a module for.                                |
 | `--day`      | `-d` | The day to create a solution stub for.                       |
-| `--template` | `-t` | Path to an optional template file to base the stub on. (NYI) |
 
 
 ### `elf submit`:
-<br> 
+<br>
 
 > Stubs created by Elf write computed solutions into `elf.toml`, from which they are read when submitting. <br>
 
@@ -66,9 +65,11 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 ### `elf set`:
 <br>
 
-> Convenience command to manipulate year/day in `elf.toml`, e.g. to switch the current year context. 
+> Convenience command to manipulate values in `elf.toml`, e.g. to switch the current year context.
 
-| arg      | alt  | effect                |
-|----------|------|-----------------------|
-| `--year` | `-y` | Sets `elf.toml::year` |
-| `--day`  | `-d` | Sets `elf.toml::day`  |
+| arg          | alt  | effect                    |
+|--------------|------|---------------------------|
+| `--year`     | `-y` | Sets `elf.toml::year`     |
+| `--day`      | `-d` | Sets `elf.toml::day`      |
+| `--session`  | `-s` | Sets `elf.toml::session`  |
+| `--template` | `-t` | Sets `elf.toml::template` |

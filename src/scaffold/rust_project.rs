@@ -71,7 +71,7 @@ impl Scaffold for RustProject {
         }
         if cfg.session.len() == 0 {
             let err = std::io::Error::new(
-                ErrorKind::AlreadyExists,
+                ErrorKind::NotFound,
                 "Missing session token. Input can't be retrieved. Please insert your token into elf.toml",
             );
             return Err(Box::new(err));
