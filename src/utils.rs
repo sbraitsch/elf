@@ -21,7 +21,6 @@ pub fn write_new_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> 
         let err = std::io::Error::new(ErrorKind::AlreadyExists, "File already exists");
         return Err(Box::new(err));
     }
-    println!("created: {path:?}");
     Ok(())
 }
 
@@ -33,7 +32,6 @@ pub fn write_to_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
     };
     file_content.push_str(content);
     fs::write(path, file_content)?;
-    println!("modified: {path:?}");
     Ok(())
 }
 
@@ -50,6 +48,5 @@ pub fn update_elf(
     template.map(|t| cfg.template = Some(t));
     let elf = toml::ser::to_string(&cfg)?;
     fs::write("elf.toml", elf)?;
-    println!("modified: elf.toml");
     Ok(())
 }

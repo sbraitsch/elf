@@ -16,10 +16,11 @@
 > Elf tracks your current progress in the `elf.toml` file.<br>
 > Usage examples:
 >
-> - `elf new "my_aoc"` will create a new cargo project named "my_aoc" in the current directory, with a module for the current year
+> - `elf new "my_aoc"` will create a new cargo project named "my_aoc" in the current directory
+> - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
 > - `elf next` will create the stubs for the day after `elf.toml::day` in the year `elf.toml::year`
 > - `elf add -d=06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
-> - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
+
 
 Elf assumes it will to be run from the root of an elf-project, except when using the `new` command.<br>
 Available commands are:
@@ -28,11 +29,10 @@ Available commands are:
 
 <br>
 
-| arg      | alt  | required | effect                                                                          |
-| -------- | ---- | -------- | ------------------------------------------------------------------------------- |
-| `<NAME>` | --   | **yes**  | Positional argument. The name of the project to be created.                     |
-| `--lang` | `-l` | no       | The language you intend to use. Accepted values: "rust", "go". Default is Rust. |
-| `--year` | `-y` | no       | The year to create a module for. <br> Defaults to current year if missing.      |
+| arg      | alt  | required | effect                                                                                                                                              |
+| -------- | ---- | -------- |-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `<NAME>` | --   | **yes**  | Positional argument. The name of the project to be created.                                                                                         |
+| `--lang` | `-l` | no       | The language you intend to use. Defaults to Rust.<br><br> Accepted values: <br>[ 'rust', 'rs', 'c++', 'cpp', 'cc', 'kotlin', 'kt', 'go', 'golang' ] |
 
 ### `elf next`:
 

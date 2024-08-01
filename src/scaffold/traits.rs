@@ -2,7 +2,7 @@ use std::error::Error;
 use crate::Config;
 
 pub trait Scaffold {
-    fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>>;
+    fn project(&self, name: &str, token: String) -> Result<(), Box<dyn Error>>;
 
     fn module(&self, year: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>>;
 

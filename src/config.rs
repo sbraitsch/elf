@@ -1,7 +1,8 @@
-use crate::{scaffold::go_project::GoProject, scaffold::rust_project::RustProject, Scaffold};
-use clap::ValueEnum;
+use std::{collections::HashMap};
+use std::str::FromStr;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Display};
+use crate::scaffold::*;
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -13,10 +14,27 @@ pub struct Config {
     pub solutions: HashMap<String, Vec<String>>,
 }
 
-#[derive(Serialize, Deserialize, ValueEnum, Debug, Clone)]
+impl Config {
+    pub fn new(lang: Language, session: String) -> Self {
+        Config{
+            year: "Not Set".to_string(),
+            day: "Not Set".to_string(),
+            lang,
+            session,
+            template: None,
+            solutions: Default::default(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Language {
     #[serde(rename = "rust")]
     Rust,
+    #[serde(rename = "kotlin")]
+    Kotlin,
+    #[serde(rename = "c++")]
+    Cpp,
     #[serde(rename = "go")]
     Go,
 }
@@ -26,16 +44,22 @@ impl Language {
         match self {
             Self::Rust => Box::new(RustProject {}),
             Self::Go => Box::new(GoProject {}),
+            Self::Kotlin => Box::new(KotlinProject{}),
+            Self::Cpp => Box::new(CppProject{})
         }
     }
 }
 
-impl Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            Language::Rust => "rust",
-            Language::Go => "go",
-        };
-        write!(f, "{s}")
+impl FromStr for Language {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "c++" | "cpp" | "cc" => Ok(Language::Cpp),
+            "rust" | "rs" => Ok(Language::Rust),
+            "kotlin" | "kt" => Ok(Language::Kotlin),
+            "go" | "golang" => Ok(Language::Go),
+            _ => Err(format!("'{s}' is not a supported language."))
+        }
     }
 }

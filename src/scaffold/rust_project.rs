@@ -6,31 +6,25 @@ use std::error::Error;
 use std::io::ErrorKind;
 use std::path::Path;
 use std::process::Command;
-use std::{env, fs};
+use std::{env, fs, io};
+use crate::config::Language;
+use crate::scaffold::projects::RustProject;
 
 const UTILS: &str = include_str!("../templates/utils.rs");
 const TEMPLATE: &str = include_str!("../templates/template.rs");
-pub struct RustProject {}
 
 impl Scaffold for RustProject {
-    fn project(&self, year: &str, name: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
-        if Path::new(name).exists() {
-            let err =
-                std::io::Error::new(ErrorKind::AlreadyExists, "Project directory already exists");
-            return Err(Box::new(err));
-        }
+    fn project(&self, name: &str, token: String) -> Result<(), Box<dyn Error>> {
         let cmd = Command::new("cargo").arg("new").arg(name).output()?;
         if cmd.status.success() {
-            println!("A diligent elf is scaffolding your new project: \'{name}\'🎁");
             env::set_current_dir(name)?;
-            let git_ignore = "/target\n**/inputs/\nelf.toml\n.DS_Store";
+            update_elf(None, None, None, None, &mut Config::new(Language::Rust, token))?;
+            let git_ignore = "**/inputs/\nelf.toml\n.DS_Store";
             write_to_file(Path::new(".gitignore"), git_ignore)?;
             write_new_file(Path::new("src/utils.rs"), UTILS)?;
-            self.module(year, cfg)?;
-            println!("You're all set. Have fun! 🎅🏻");
             Ok(())
         } else {
-            let err = std::io::Error::new(ErrorKind::Other, String::from_utf8_lossy(&cmd.stderr));
+            let err = io::Error::new(ErrorKind::Other, String::from_utf8_lossy(&cmd.stderr));
             return Err(Box::new(err));
         }
     }
@@ -74,7 +68,12 @@ impl Scaffold for RustProject {
                 "Input file could not be retrieved due to an unset session variable in elf.toml"
             )
         } else {
-            if let Err(e) = write_input(&base_path, year, day, &cfg.session) {
+            let mut token = String::new();
+            if !cfg.session.starts_with("session=") {
+                token.push_str("session=");
+            }
+            token.push_str(&cfg.session);
+            if let Err(e) = write_input(&base_path, year, day, &token) {
                 eprintln!("Error writing input file: {}", e);
                 std::process::exit(1);
             }
@@ -91,7 +90,7 @@ fn write_solution_template(
 ) -> Result<(), Box<dyn Error>> {
     let content;
     if let Some(template_path) = template {
-        eprintln!("Using @{template_path} as a template");
+        println!("Using @{template_path} as a template");
         content = fs::read_to_string(template_path)?
             .replace("{{year}}", year)
             .replace("{{day}}", day);
@@ -115,7 +114,6 @@ fn write_solution_mod(base_path: &str, day: &str) -> Result<(), Box<dyn Error>> 
     if !content.contains(&add_to_mod) {
         content.push_str(&add_to_mod);
         fs::write(&mod_path, content)?;
-        println!("modified: {mod_path:?}")
     }
     Ok(())
 }
@@ -139,7 +137,9 @@ fn write_input(
         .build()?;
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, HeaderValue::from_str(session)?);
-    let response = client.get(url).headers(headers).send()?;
-    write_new_file(&file_path, &response.text()?)?;
+    match client.get(url).headers(headers).send() {
+        Ok(response) => write_new_file(&file_path, &response.text()?)?,
+        Err(e) => eprintln!("{e:?}")
+    }
     Ok(())
 }

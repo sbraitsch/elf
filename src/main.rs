@@ -3,11 +3,12 @@ mod scaffold;
 mod submit;
 mod utils;
 
+use std::{env, io};
+use std::path::Path;
 use crate::config::{Config, Language};
 use crate::scaffold::traits::Scaffold;
 use crate::utils::{read_config, update_elf};
-use clap::{Parser, Subcommand};
-use jiff::Zoned;
+use clap::{Parser, Subcommand, value_parser};
 use regex::Regex;
 
 #[derive(Parser)]
@@ -20,14 +21,13 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     New {
-        #[arg(short, long, value_name = "YEAR", default_value = current_year(), help = "Specify the year you want to get started with")]
-        year: String,
         #[arg(
             short,
             long,
             value_name = "LANGUAGE",
-            default_value_t = Language::Rust,
-            help = "Specify language to use. Supports [rust, go]"
+            default_value = "rust",
+            value_parser = value_parser!(Language),
+            help = "Specify language to use. Supports [rust, kotlin, c++, go]"
         )]
         lang: Language,
         name: String,
@@ -99,28 +99,26 @@ fn main() {
     let cli = Cli::parse();
 
     // ---------DEV----------
-    // if let Some(Commands::New { .. }) = &cli.command {
-    //     env::set_current_dir("../").expect("Error moving to project dir");
-    // } else {
-    //     env::set_current_dir("../aoc").expect("Error moving to project dir");
-    // }
+    if let Some(Commands::New { .. }) = &cli.command {
+        env::set_current_dir("../").expect("Error moving to project dir");
+    } else {
+        env::set_current_dir("../aoc").expect("Error moving to project dir");
+    }
     // ----------------------
 
     match &cli.command {
-        Some(Commands::New { year, lang, name }) => {
-            let mut cfg = Config {
-                year: year.clone(),
-                day: String::from("01"),
-                lang: lang.clone(),
-                session: String::new(),
-                template: None,
-                solutions: Default::default(),
-            };
+        Some(Commands::New { lang, name }) => {
+            if Path::new(name).exists() {
+                eprintln!("There is already a directory called {name}. Try a different name.");
+                return;
+            }
+            println!("A diligent elf has started scaffolding your new project: \'{name}\'🎁");
+            println!("Please enter your AoC session token:");
+            let mut session_token = String::new();
+            io::stdin().read_line(&mut session_token).unwrap();
 
-            let res = lang.to_project().project(year, name, &mut cfg);
-
-            match res {
-                Ok(_) => {}
+            match lang.to_project().project(name, session_token.trim().to_string()) {
+                Ok(_) => println!("You're all set.\nTo get started, create a new module with: 'elf add -y=<YEAR>'"),
                 Err(e) => eprintln!("Error during scaffolding process: {e:?}"),
             }
         }
@@ -187,10 +185,6 @@ fn fmt_day(day: i8) -> String {
     } else {
         day.to_string()
     };
-}
-
-fn current_year() -> String {
-    Zoned::now().year().to_string()
 }
 
 fn validate_day(day: &str) -> Result<String, String> {

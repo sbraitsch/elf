@@ -1,3 +1,9 @@
 pub mod traits;
-pub mod rust_project;
-pub mod go_project;
+pub use traits::Scaffold;
+pub mod projects;
+pub use projects::*;
+
+mod rust_project;
+mod kotlin_project;
+mod cpp_project;
+mod go_project;
