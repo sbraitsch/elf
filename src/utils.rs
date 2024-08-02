@@ -3,6 +3,9 @@ use std::error::Error;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::Path;
+use regex::Regex;
+use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
+use crate::config::AdventUnit;
 
 pub fn read_config() -> Option<Config> {
     if let Ok(content) = fs::read_to_string("elf.toml") {
@@ -50,3 +53,54 @@ pub fn update_elf(
     fs::write("elf.toml", elf)?;
     Ok(())
 }
+
+pub fn load_input(year: &str, day: &str, session: &str) -> Result<String, Box<dyn Error>> {
+    let d = day.parse::<i32>().unwrap();
+    let url = format!("https://adventofcode.com/{year}/day/{d}/input");
+    let client = reqwest::blocking::Client::builder()
+        .cookie_store(true)
+        .build()?;
+    let mut headers = HeaderMap::new();
+    headers.insert(COOKIE, HeaderValue::from_str(session)?);
+    return match client.get(url).headers(headers).send() {
+        Ok(response) => Ok(response.text()?),
+        Err(e) => Err(Box::new(e))
+    }
+}
+
+pub fn validate_unit(unit: &str) -> Result<AdventUnit, String> {
+    let day_reg = Regex::new(r"^(0[1-9]|1[0-9]|2[0-5])$").unwrap();
+    let year_reg = Regex::new(r"^(201[5-9]|202[0-9])$").unwrap();
+    if day_reg.is_match(unit) {
+        Ok(AdventUnit::Day(String::from(unit)))
+    } else if year_reg.is_match(unit){
+        Ok(AdventUnit::Year(String::from(unit)))
+    } else {
+        Err(String::from(
+            "Either provide a zero-padded string in the range 01-25 for a new day, or a year from 2015 on.",
+        ))
+    }
+}
+
+pub fn validate_day(unit: &str) -> Result<String, String> {
+    let day_reg = Regex::new(r"^(0[1-9]|1[0-9]|2[0-5])$").unwrap();
+    if day_reg.is_match(unit) {
+        Ok(String::from(unit))
+    } else {
+        Err(String::from(
+            "Provide a zero-padded string in the range 01-25.",
+        ))
+    }
+}
+
+pub fn validate_year(unit: &str) -> Result<String, String> {
+    let year_reg = Regex::new(r"^(201[5-9]|202[0-9])$").unwrap();
+    if year_reg.is_match(unit) {
+        Ok(String::from(unit))
+    } else {
+        Err(String::from(
+            "Provide a value between 2015 and 2029.",
+        ))
+    }
+}
+

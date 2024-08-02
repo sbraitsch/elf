@@ -16,10 +16,10 @@
 > Elf tracks your current progress in the `elf.toml` file.<br>
 > Usage examples:
 >
-> - `elf new "my_aoc"` will create a new cargo project named "my_aoc" in the current directory
-> - `elf add -y=2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
+> - `elf new <project>` will create a new cargo project named \<project> in the current directory
+> - `elf add 2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
+> - `elf add 06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 > - `elf next` will create the stubs for the day after `elf.toml::day` in the year `elf.toml::year`
-> - `elf add -d=06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 
 
 Elf assumes it will to be run from the root of an elf-project, except when using the `new` command.<br>
@@ -29,10 +29,10 @@ Available commands are:
 
 <br>
 
-| arg      | alt  | required | effect                                                                                                                                              |
-| -------- | ---- | -------- |-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `<NAME>` | --   | **yes**  | Positional argument. The name of the project to be created.                                                                                         |
-| `--lang` | `-l` | no       | The language you intend to use. Defaults to Rust.<br><br> Accepted values: <br>[ 'rust', 'rs', 'c++', 'cpp', 'cc', 'kotlin', 'kt', 'go', 'golang' ] |
+| arg      | alt  | required | effect                                                                                                                                               |
+| -------- |------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `<NAME>` | --   | **yes**  | Positional argument. The name of the project to be created.                                                                                          |
+| `--lang` | `-l` | no       | The language you intend to use. Defaults to Rust.<br><br> Accepted values: <br>[ 'rust', 'rs', 'c++', 'cpp', 'cc', 'kotlin', 'kt', 'go', 'golang' ]  |
 
 ### `elf next`:
 
@@ -48,10 +48,9 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 > If you want to add a specific day to a specific year, you can change `year` in the `elf.toml`.
 > Note that the module for that year needs to exist. It will not be auto-created.
 
-| arg      | alt  | effect                                 |
-| -------- | ---- | -------------------------------------- |
-| `--year` | `-y` | The year to add a module for.          |
-| `--day`  | `-d` | The day to create a solution stub for. |
+| arg      | alt | effect                                                                                                                                          |
+|----------|-----|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `<DATE>` | --  | Depending on the format, adds either that year as a new module, or that day in the configured year<br/>[2015-2029] for years, [01-25] for days. |
 
 ### `elf submit`:
 

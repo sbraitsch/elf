@@ -25,6 +25,15 @@ impl Config {
             solutions: Default::default(),
         }
     }
+
+    pub fn get_session(&self) -> String {
+        let mut token = String::new();
+        if !self.session.starts_with("session=") {
+            token.push_str("session=");
+        }
+        token.push_str(&self.session);
+        token
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -62,4 +71,10 @@ impl FromStr for Language {
             _ => Err(format!("'{s}' is not a supported language."))
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum AdventUnit {
+    Day(String),
+    Year(String)
 }

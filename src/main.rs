@@ -1,15 +1,15 @@
+#![allow(unused_imports)]
 mod config;
 mod scaffold;
 mod submit;
 mod utils;
 
-use std::{env, io};
-use std::path::Path;
-use crate::config::{Config, Language};
+use crate::config::{AdventUnit, Config, Language};
 use crate::scaffold::traits::Scaffold;
-use crate::utils::{read_config, update_elf};
-use clap::{Parser, Subcommand, value_parser};
-use regex::Regex;
+use crate::utils::{read_config, update_elf, validate_day, validate_unit, validate_year};
+use clap::{value_parser, Parser, Subcommand};
+use std::path::Path;
+use std::{env, io};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -37,11 +37,19 @@ enum Commands {
             short,
             long,
             required = false,
+            value_parser = validate_year,
             value_name = "YEAR",
             help = "Specify the year"
         )]
         year: Option<String>,
-        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
+        #[arg(
+            short,
+            long,
+            required = false,
+            value_parser = validate_day,
+            value_name = "DAY",
+            help = "Specify the day"
+        )]
         day: Option<String>,
         #[arg(
             short,
@@ -53,27 +61,27 @@ enum Commands {
         part: u8,
     },
     Add {
-        #[arg(
-            short,
-            long,
-            required = false,
-            value_name = "YEAR",
-            help = "Specify the year"
-        )]
-        year: Option<String>,
-        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
-        day: Option<String>,
+        #[arg(required = true, value_parser = validate_unit, help = "Specify what to add")]
+        unit: AdventUnit,
     },
     Set {
         #[arg(
             short,
             long,
             required = false,
+            value_parser = validate_year,
             value_name = "YEAR",
             help = "Specify the year"
         )]
         year: Option<String>,
-        #[arg(short, long, required = false, value_parser = validate_day, value_name = "DAY", help = "Specify the day")]
+        #[arg(
+            short,
+            long,
+            required = false,
+            value_parser = validate_day,
+            value_name = "DAY",
+            help = "Specify the day"
+        )]
         day: Option<String>,
         #[arg(
             short,
@@ -133,20 +141,26 @@ fn main() {
                 }
             }
         }
-        Some(Commands::Add { year, day }) => {
+        Some(Commands::Add { unit }) => {
             if let Some(mut cfg) = read_config() {
                 let project: Box<dyn Scaffold> = cfg.lang.to_project();
-                match (year, day) {
-                    (Some(y), None) => project
-                        .module(y, &mut cfg)
-                        .expect(&format!("Error creating new module for AoC {y}")),
-                    (None, Some(d)) => project.day(&cfg.year.clone(), d, &mut cfg).expect(
-                        &format!("Error creating stubs for AoC {}, day {d}", &cfg.year),
-                    ),
-                    (Some(_), Some(_)) | (None, None) => {
-                        eprintln!("Add only supports year XOR day.")
+                match unit {
+                    AdventUnit::Day(day) => {
+                        println!("Adding Day {day} to aoc_{}.", cfg.year);
+                        project
+                            .day(&cfg.year.clone(), day, &mut cfg)
+                            .expect(&format!(
+                                "Error creating stubs for AoC {}, day {day}",
+                                &cfg.year
+                            ))
                     }
-                };
+                    AdventUnit::Year(year) => {
+                        println!("Adding new module for aoc_{year}.");
+                        project
+                            .module(year, &mut cfg)
+                            .expect(&format!("Error creating new module for AoC {year}"))
+                    }
+                }
             }
         }
         Some(Commands::Next) => {
@@ -185,15 +199,4 @@ fn fmt_day(day: i8) -> String {
     } else {
         day.to_string()
     };
-}
-
-fn validate_day(day: &str) -> Result<String, String> {
-    let re = Regex::new(r"^(0[1-9]|1[0-9]|2[0-5])$").unwrap();
-    if re.is_match(day) {
-        Ok(String::from(day))
-    } else {
-        Err(String::from(
-            "The day must be a zero-padded string in the range 01-25",
-        ))
-    }
 }

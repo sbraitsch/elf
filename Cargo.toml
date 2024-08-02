@@ -9,3 +9,4 @@ reqwest = { version = "0.12.5", features = ["blocking", "cookies"] }
 serde = { version = "1.0.204", features = ["derive"]}
 toml = "0.8.15"
 regex = "1.10.5"
+select = "0.6.0"

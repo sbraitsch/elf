@@ -1,7 +1,6 @@
 use super::traits::Scaffold;
-use crate::utils::{update_elf, write_new_file, write_to_file};
+use crate::utils::{load_input, update_elf, write_new_file, write_to_file};
 use crate::Config;
-use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
 use std::error::Error;
 use std::io::ErrorKind;
 use std::path::Path;
@@ -41,7 +40,7 @@ impl Scaffold for RustProject {
     fn day(&self, year: &str, day: &str, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
         let base_path = format!("src/aoc_{year}");
         if !Path::new(&base_path).exists() {
-            let err = std::io::Error::new(
+            let err = io::Error::new(
                 ErrorKind::NotFound,
                 format!("No module found for AoC {year}. Create one first with elf add -y=xxxx"),
             );
@@ -68,11 +67,7 @@ impl Scaffold for RustProject {
                 "Input file could not be retrieved due to an unset session variable in elf.toml"
             )
         } else {
-            let mut token = String::new();
-            if !cfg.session.starts_with("session=") {
-                token.push_str("session=");
-            }
-            token.push_str(&cfg.session);
+            let token = cfg.get_session();
             if let Err(e) = write_input(&base_path, year, day, &token) {
                 eprintln!("Error writing input file: {}", e);
                 std::process::exit(1);
@@ -130,16 +125,6 @@ fn write_input(
         fs::create_dir(input_dir)?;
     }
     let file_path = Path::new(&base_path).join("inputs").join(&filename);
-    let d = day.parse::<i32>().unwrap();
-    let url = format!("https://adventofcode.com/{year}/day/{d}/input");
-    let client = reqwest::blocking::Client::builder()
-        .cookie_store(true)
-        .build()?;
-    let mut headers = HeaderMap::new();
-    headers.insert(COOKIE, HeaderValue::from_str(session)?);
-    match client.get(url).headers(headers).send() {
-        Ok(response) => write_new_file(&file_path, &response.text()?)?,
-        Err(e) => eprintln!("{e:?}")
-    }
+    write_new_file(&file_path, &load_input(year, day, session)?)?;
     Ok(())
 }
