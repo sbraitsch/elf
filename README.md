@@ -7,7 +7,7 @@
 - Option to define a template to use
 - Load your puzzle input (requires a session cookie)
 - Create modules for a new year of solutions inside a previously bootstrapped project
-- Submit solutions (**NYI**)
+- Submit solutions
 
 ## How do I use it?
 
@@ -57,6 +57,7 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 <br>
 
 > Stubs created by Elf write computed solutions into `elf.toml`, from which they are read when submitting. <br>
+> Either specify year AND day, or neither to use the values from `elf.toml`
 
 | arg      | alt  | effect                                                            |
 | -------- | ---- | ----------------------------------------------------------------- |
