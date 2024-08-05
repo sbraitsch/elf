@@ -20,6 +20,7 @@
 > - `elf add 2023` will create a new module for the 2023 AoC, including stubs for day 1, and adjust `elf.toml`
 > - `elf add 06` will create the stubs for day 6 in the year `elf.toml::year` and set `elf.toml::day` to 06
 > - `elf next` will create the stubs for the day after `elf.toml::day` in the year `elf.toml::year`
+> - `elf run` does the same as `cargo run`, but also writes the solution into `elf.toml`
 
 
 Elf assumes it will to be run from the root of an elf-project, except when using the `new` command.<br>
@@ -78,3 +79,11 @@ Expands the existing scaffolding by either a new submodule or a solution stub.
 | `--day`      | `-d` | Sets `elf.toml::day`      |
 | `--session`  | `-s` | Sets `elf.toml::session`  |
 | `--template` | `-t` | Sets `elf.toml::template` |
+
+### `elf run`:
+
+<br>
+
+> Internally calls `cargo run` and writes part of the `stdout` into `elf.toml`.
+> It assumes one line per solution and that the solution value is the first word of the output.
+> Takes `[ -r | --release ]` as optional flag and passes it to `cargo`
