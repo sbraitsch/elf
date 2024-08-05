@@ -32,6 +32,15 @@ enum Commands {
         lang: Language,
         name: String,
     },
+    Run {
+        #[arg(
+            short,
+            long,
+            required = false,
+            help = "Release build flag for cargo"
+        )]
+        release: bool,
+    },
     Submit {
         #[arg(
             short,
@@ -130,14 +139,17 @@ fn main() {
                 Err(e) => eprintln!("Error during scaffolding process: {e:?}"),
             }
         }
+        Some(Commands::Run { release}) => {
+            if let Some(mut cfg) = read_config() {
+                let project: Box<dyn Scaffold> = cfg.lang.to_project();
+                project.run(*release, &mut cfg).expect("Error during program execution");
+            }
+        }
         Some(Commands::Submit { year, day, part }) => {
             if let Some(cfg) = read_config() {
                 match (year, day) {
-                    (Some(_), None) | (None, Some(_)) => {
-                        eprintln!("Specify either both year and day, or none")
-                    }
-                    (Some(y), Some(d)) => submit::submit(y, d, *part, &cfg),
-                    (None, None) => submit::submit(&cfg.year, &cfg.day, *part, &cfg),
+                    (Some(_), None) | (None, Some(_)) => eprintln!("Specify either both year and day, or none"),
+                    _ => submit::submit(year.as_deref().unwrap_or(&cfg.year), day.as_deref().unwrap_or(&cfg.day), *part, &cfg),
                 }
             }
         }

@@ -19,4 +19,8 @@ impl Scaffold for KotlinProject {
         println!("Kotlin support is under development");
         Ok(())
     }
+
+    fn run(&self, release: bool, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
 }

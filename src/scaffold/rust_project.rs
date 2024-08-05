@@ -1,10 +1,10 @@
 use super::traits::Scaffold;
-use crate::utils::{load_input, update_elf, write_new_file, write_to_file};
+use crate::utils::{handle_run, load_input, overwrite_elf, update_elf, write_new_file, write_to_file};
 use crate::Config;
 use std::error::Error;
 use std::io::ErrorKind;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Output, Stdio};
 use std::{env, fs, io};
 use crate::config::Language;
 use crate::scaffold::projects::RustProject;
@@ -20,6 +20,7 @@ impl Scaffold for RustProject {
             update_elf(None, None, None, None, &mut Config::new(Language::Rust, token))?;
             let git_ignore = "**/inputs/\nelf.toml\n.DS_Store";
             write_to_file(Path::new(".gitignore"), git_ignore)?;
+            write_to_file(Path::new("src/main.rs"), "mod utils;")?;
             write_new_file(Path::new("src/utils.rs"), UTILS)?;
             Ok(())
         } else {
@@ -46,22 +47,7 @@ impl Scaffold for RustProject {
             );
             return Err(Box::new(err));
         }
-        update_elf(
-            Some(year.to_string()),
-            Some(day.to_string()),
-            None,
-            None,
-            cfg,
-        )?;
 
-        if let Err(e) = write_solution_template(&base_path, year, day, &cfg.template) {
-            eprintln!("Error writing solution template: {}", e);
-            std::process::exit(1);
-        }
-        if let Err(e) = write_solution_mod(&base_path, day) {
-            eprintln!("Error updating mod.rs: {}", e);
-            std::process::exit(1);
-        }
         if cfg.session.len() == 0 {
             eprintln!(
                 "Input file could not be retrieved due to an unset session variable in elf.toml"
@@ -73,7 +59,35 @@ impl Scaffold for RustProject {
                 std::process::exit(1);
             }
         }
+
+        if let Err(e) = write_solution_template(&base_path, year, day, &cfg.template) {
+            eprintln!("Error writing solution template: {}", e);
+            std::process::exit(1);
+        }
+        if let Err(e) = write_solution_mod(&base_path, day) {
+            eprintln!("Error updating mod.rs: {}", e);
+            std::process::exit(1);
+        }
+
+        update_elf(
+            Some(year.to_string()),
+            Some(day.to_string()),
+            None,
+            None,
+            cfg,
+        )?;
+
         Ok(())
+    }
+
+    fn run(&self, release: bool, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
+        let cmd = if release {
+            Command::new("cargo").stdout(Stdio::piped()).arg("run").arg("--release").output()?
+        } else {
+            Command::new("cargo").arg("run").output()?
+        };
+
+        handle_run(cfg, &cmd)
     }
 }
 

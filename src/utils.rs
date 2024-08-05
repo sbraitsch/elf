@@ -1,8 +1,9 @@
 use crate::Config;
 use std::error::Error;
-use std::fs;
+use std::{fs, io};
 use std::io::ErrorKind;
 use std::path::Path;
+use std::process::Output;
 use regex::Regex;
 use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
 use crate::config::AdventUnit;
@@ -49,6 +50,10 @@ pub fn update_elf(
     day.map(|d| cfg.day = d);
     session.map(|s| cfg.session = s);
     template.map(|t| cfg.template = Some(t));
+    overwrite_elf(cfg)
+}
+
+pub fn overwrite_elf(cfg: &mut Config) -> Result<(), Box<dyn Error>> {
     let elf = toml::ser::to_string(&cfg)?;
     fs::write("elf.toml", elf)?;
     Ok(())
@@ -101,6 +106,20 @@ pub fn validate_year(unit: &str) -> Result<String, String> {
         Err(String::from(
             "Provide a value between 2015 and 2029.",
         ))
+    }
+}
+
+pub fn handle_run(cfg: &mut Config, cmd: &Output) -> Result<(), Box<dyn Error>> {
+    return if cmd.status.success() {
+        let solutions = String::from_utf8_lossy(&cmd.stdout);
+        println!("{solutions}");
+        let key = format!("{}-{}", cfg.year, cfg.day);
+        let to_write: Vec<String> = solutions.lines().map(|line| line.split_once(" ").unwrap().0.to_owned()).collect();
+        cfg.solutions.insert(key, to_write);
+        overwrite_elf(cfg)
+    } else {
+        let err = io::Error::new(ErrorKind::Other, String::from_utf8_lossy(&cmd.stderr));
+        Err(Box::new(err))
     }
 }
 

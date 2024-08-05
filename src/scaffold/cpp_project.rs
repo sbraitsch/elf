@@ -18,4 +18,8 @@ impl Scaffold for CppProject {
         println!("Cpp support is under development");
         Ok(())
     }
+
+    fn run(&self, release: bool, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
 }

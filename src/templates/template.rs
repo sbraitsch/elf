@@ -5,11 +5,11 @@ use std::time::Instant;
 pub fn solve() {
     let lines = utils::file_to_lines("{{year}}", "{{day}}");
     let mut time = Instant::now();
-    let p1 = String::from(part_one(&lines));
-    println!("Part 1: {:?} in {:?}", p1, time.elapsed());
+    let p1 = part_one(&lines);
+    println!("{:?} in {:?} for Part 1", p1, time.elapsed());
     time = Instant::now();
-    let p2 = String::from(part_two(&lines));
-    println!("Part 2: {:?} in {:?}", p2, time.elapsed());
+    let p2 = part_two(&lines);
+    println!("{:?} in {:?} for Part 2", p2, time.elapsed());
 }
 
 fn part_one(lines: &[String]) -> usize {

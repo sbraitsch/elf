@@ -19,4 +19,8 @@ impl Scaffold for GoProject {
         println!("Golang support is not yet implemented");
         Ok(())
     }
+
+    fn run(&self, release: bool, cfg: &mut Config) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
 }
