@@ -13,9 +13,13 @@
 
 Requires [Rust Toolchain](https://rustup.rs/).
 
-> `cargo install --git https://github.com/sbraitsch/elf`
-or
+> `cargo install --git https://github.com/sbraitsch/elf`<br>
+
+or<br>
+
 > Clone to your machine, then `cargo install --path .`
+
+
 ## How do I use it?
 
 <br>
