@@ -11,7 +11,7 @@
 
 ## Installation
 
-Requires (Rust Toolchain)[https://rustup.rs/].
+Requires [Rust Toolchain](https://rustup.rs/).
 
 > `cargo install --git https://github.com/sbraitsch/elf`
 or
