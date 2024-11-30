@@ -45,7 +45,6 @@ Creates the solution stubs for the _next_ puzzle, based on the values in `elf.to
 
 Expands the existing scaffolding by either a new submodule or a solution stub.
 
-> For a cleaner API, `--year` and `--day` are mutually exclusive.<br>
 > If you want to add a specific day to a specific year, you can change `year` in the `elf.toml`.
 > Note that the module for that year needs to exist. It will not be auto-created.
 
