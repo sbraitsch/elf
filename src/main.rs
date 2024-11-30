@@ -135,7 +135,7 @@ fn main() {
             io::stdin().read_line(&mut session_token).unwrap();
 
             match lang.to_project().project(name, session_token.trim().to_string()) {
-                Ok(_) => println!("You're all set.\nTo get started, create a new module with: 'elf add -y=<YEAR>'"),
+                Ok(_) => println!("You're all set.\nTo get started, cd into the project and create a new module with: 'elf add <YEAR>'"),
                 Err(e) => eprintln!("Error during scaffolding process: {e:?}"),
             }
         }

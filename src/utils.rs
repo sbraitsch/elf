@@ -39,6 +39,14 @@ pub fn write_to_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+
+pub fn overwrite_file(path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
+    let mut file_content = String::new();
+    file_content.push_str(content);
+    fs::write(path, file_content)?;
+    Ok(())
+}
+
 pub fn update_elf(
     year: Option<String>,
     day: Option<String>,

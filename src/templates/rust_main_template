@@ -1,0 +1,6 @@
+mod aoc_{{year}};
+mod utils;
+
+fn main() {
+    aoc_{{year}}::day_{{day}}::solve();
+}

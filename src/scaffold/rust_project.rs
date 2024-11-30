@@ -1,5 +1,5 @@
 use super::traits::Scaffold;
-use crate::utils::{handle_run, load_input, overwrite_elf, update_elf, write_new_file, write_to_file};
+use crate::utils::{handle_run, load_input, overwrite_elf, overwrite_file, update_elf, write_new_file, write_to_file};
 use crate::Config;
 use std::error::Error;
 use std::io::ErrorKind;
@@ -10,7 +10,8 @@ use crate::config::Language;
 use crate::scaffold::projects::RustProject;
 
 const UTILS: &str = include_str!("../templates/utils.rs");
-const TEMPLATE: &str = include_str!("../templates/template.rs");
+const TEMPLATE: &str = include_str!("../templates/rust_template");
+const MAIN_TEMPLATE: &str = include_str!("../templates/rust_main_template");
 
 impl Scaffold for RustProject {
     fn project(&self, name: &str, token: String) -> Result<(), Box<dyn Error>> {
@@ -20,7 +21,6 @@ impl Scaffold for RustProject {
             update_elf(None, None, None, None, &mut Config::new(Language::Rust, token))?;
             let git_ignore = "**/inputs/\nelf.toml\n.DS_Store";
             write_to_file(Path::new(".gitignore"), git_ignore)?;
-            write_to_file(Path::new("src/main.rs"), "mod utils;")?;
             write_new_file(Path::new("src/utils.rs"), UTILS)?;
             Ok(())
         } else {
@@ -34,6 +34,7 @@ impl Scaffold for RustProject {
         fs::create_dir_all(format!("src/aoc_{year}/inputs"))?;
         let aoc_mod = "pub mod solutions;\npub use solutions::*;";
         write_new_file(Path::new(&format!("src/aoc_{year}/mod.rs")), aoc_mod)?;
+
         self.day(year, "01", cfg)?;
         Ok(())
     }
@@ -62,6 +63,10 @@ impl Scaffold for RustProject {
 
         if let Err(e) = write_solution_template(&base_path, year, day, &cfg.template) {
             eprintln!("Error writing solution template: {}", e);
+            std::process::exit(1);
+        }
+        if let Err(e) =  overwrite_file(Path::new("src/main.rs"), &new_main_content(year, day)?) {
+            eprintln!("Error updating main.rs: {}", e);
             std::process::exit(1);
         }
         if let Err(e) = write_solution_mod(&base_path, day) {
@@ -97,6 +102,27 @@ fn write_solution_template(
     day: &str,
     template: &Option<String>,
 ) -> Result<(), Box<dyn Error>> {
+    let content = read_template(year, day, template, TEMPLATE)?;
+    let filename = format!("day_{day}.rs");
+    let file_path = Path::new(&base_path).join("solutions").join(&filename);
+    write_new_file(&file_path, &content)?;
+    Ok(())
+}
+
+fn new_main_content(
+    year: &str,
+    day: &str,
+) -> Result<String, Box<dyn Error>> {
+    let content = read_template(year, day, &None, MAIN_TEMPLATE)?;
+    Ok(content)
+}
+
+fn read_template(
+    year: &str,
+    day: &str,
+    template: &Option<String>,
+    default: &str
+) -> Result<String, Box<dyn Error>> {
     let content;
     if let Some(template_path) = template {
         println!("Using @{template_path} as a template");
@@ -104,12 +130,9 @@ fn write_solution_template(
             .replace("{{year}}", year)
             .replace("{{day}}", day);
     } else {
-        content = TEMPLATE.replace("{{year}}", year).replace("{{day}}", day);
+        content = default.replace("{{year}}", year).replace("{{day}}", day);
     }
-    let filename = format!("day_{day}.rs");
-    let file_path = Path::new(&base_path).join("solutions").join(&filename);
-    write_new_file(&file_path, &content)?;
-    Ok(())
+    Ok(content)
 }
 
 fn write_solution_mod(base_path: &str, day: &str) -> Result<(), Box<dyn Error>> {
