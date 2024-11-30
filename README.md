@@ -9,6 +9,13 @@
 - Create modules for a new year of solutions inside a previously bootstrapped project
 - Submit solutions
 
+## Installation
+
+Requires (Rust Toolchain)[https://rustup.rs/].
+
+> `cargo install --git https://github.com/sbraitsch/elf`
+or
+> Clone to your machine, then `cargo install --path .`
 ## How do I use it?
 
 <br>
